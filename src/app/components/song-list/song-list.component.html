@@ -1,0 +1,117 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+  <!-- Header + Search/Filter Bar (all inline) -->
+  <div class="flex flex-wrap items-center gap-3 mb-8">
+
+    <!-- Title -->
+    <h1 class="text-2xl font-extrabold text-white tracking-tight mr-2">🎵 Song Library</h1>
+
+    <!-- Search input -->
+    <input
+      type="text"
+      [(ngModel)]="searchQuery"
+      (keyup.enter)="onSearch()"
+      placeholder="Search title or artist..."
+      class="flex-1 min-w-[180px] bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition"
+    />
+
+    <!-- Key filter -->
+    <select
+      [(ngModel)]="selectedKey"
+      (change)="onSearch()"
+      class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500"
+    >
+      <option value="">All Keys</option>
+      <option *ngFor="let k of keys" [value]="k">{{ k }}</option>
+    </select>
+
+    <!-- Genre filter -->
+    <select
+      [(ngModel)]="selectedGenre"
+      (change)="onSearch()"
+      class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500"
+    >
+      <option value="">All Genres</option>
+      <option *ngFor="let g of genres" [value]="g">{{ g }}</option>
+    </select>
+
+    <!-- Reset button -->
+    <button
+      (click)="resetFilters()"
+      title="Reset Filters"
+      class="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl border border-slate-800 text-sm transition"
+    >
+      ↺
+    </button>
+
+    <!-- New Song: small plus icon button -->
+    <a
+      routerLink="/songs/new"
+      title="Add New Song"
+      class="w-9 h-9 flex items-center justify-center bg-sky-500 hover:bg-sky-400 text-slate-950 font-black rounded-xl shadow-md shadow-sky-500/20 transition text-lg leading-none"
+    >
+      +
+    </a>
+
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="text-center py-16">
+    <div class="inline-block animate-spin text-4xl mb-3">🔄</div>
+    <p class="text-slate-400">Loading your songbook...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && songs.length === 0" class="text-center py-16 bg-slate-900/50 rounded-2xl border border-slate-800/80">
+    <span class="text-5xl block mb-3">🎹</span>
+    <h3 class="text-lg font-semibold text-slate-200">No songs found</h3>
+    <p class="text-slate-500 mt-1 mb-4">Add your first chord sheet or clear search filters.</p>
+    <a routerLink="/songs/new" class="inline-flex items-center font-semibold text-sky-400 hover:underline">
+      + Add Song Now
+    </a>
+  </div>
+
+  <!-- Song Cards Grid -->
+  <div *ngIf="!isLoading && songs.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div
+      *ngFor="let song of songs"
+      [routerLink]="['/songs', song.id]"
+      class="group relative bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-sky-500/50 rounded-2xl p-6 transition-all duration-200 shadow-lg hover:shadow-sky-500/10 cursor-pointer flex flex-col justify-between"
+    >
+      <div>
+        <div class="flex items-start justify-between">
+          <div>
+            <h2 class="text-xl font-bold text-white group-hover:text-sky-400 transition">{{ song.title }}</h2>
+            <p class="text-slate-400 text-sm mt-0.5">{{ song.artist }}</p>
+          </div>
+          <!-- Key Badge -->
+          <span class="bg-sky-950 text-sky-400 border border-sky-800/50 font-bold px-2.5 py-1 rounded-lg text-sm">
+            {{ song.originalKey ? (song.originalKey + ' ' + (song.keyType || 'Major')) : 'Key: N/A' }}
+          </span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 mt-4">
+          <span *ngIf="song.genre" class="bg-slate-800 text-slate-300 text-xs px-2.5 py-1 rounded-md">
+            {{ song.genre }}
+          </span>
+          <span *ngIf="song.bpm" class="bg-slate-800 text-slate-300 text-xs px-2.5 py-1 rounded-md flex items-center gap-1">
+            ⏱️ {{ song.bpm }} BPM
+          </span>
+          <span *ngIf="song.duration" class="bg-slate-800 text-slate-300 text-xs px-2.5 py-1 rounded-md">
+            ⏳ {{ song.duration }}
+          </span>
+        </div>
+
+        <button
+          (click)="deleteSong(song.id, $event)"
+          title="Delete Song"
+          class="absolute bottom-5 right-5 text-slate-500 hover:text-rose-400 p-1 rounded transition"
+        >
+          🗑️
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

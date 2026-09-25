@@ -1,0 +1,80 @@
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+  <!-- Header -->
+  <div class="mb-6">
+    <a routerLink="/setlists" class="text-slate-400 hover:text-sky-400 text-sm transition">← Back to Setlists</a>
+    <h1 class="text-3xl font-extrabold text-white mt-2">
+      {{ isEditMode ? '✏️ Edit Setlist' : '➕ Create New Setlist' }}
+    </h1>
+  </div>
+
+  <form (ngSubmit)="onSubmit()" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl space-y-6">
+
+    <!-- Setlist Name -->
+    <div>
+      <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Setlist / Event Name *</label>
+      <input
+        type="text"
+        [(ngModel)]="setlist.name"
+        name="name"
+        required
+        placeholder="e.g. Wedding — 15 Aug, Acoustic Night, Sunday Service"
+        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+      />
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <!-- Event Date -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Event Date</label>
+        <input
+          type="date"
+          [(ngModel)]="setlist.eventDate"
+          name="eventDate"
+          class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-sky-500"
+        />
+      </div>
+
+      <!-- Venue / Location -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Venue / Location</label>
+        <input
+          type="text"
+          [(ngModel)]="setlist.venue"
+          name="venue"
+          placeholder="e.g. Grand Ballroom, Club Jazz, Church"
+          class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-sky-500"
+        />
+      </div>
+    </div>
+
+    <!-- Description / Gig Notes -->
+    <div>
+      <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Description / Gig Notes</label>
+      <textarea
+        [(ngModel)]="setlist.description"
+        name="description"
+        rows="4"
+        placeholder="e.g. 2 sets of 45 mins each. Acoustic opening, energetic second half."
+        class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-sky-500"
+      ></textarea>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center justify-end space-x-4 pt-4 border-t border-slate-800">
+      <a routerLink="/setlists" class="px-6 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 transition">
+        Cancel
+      </a>
+      <button
+        type="submit"
+        [disabled]="isLoading"
+        class="bg-sky-500 hover:bg-sky-400 disabled:opacity-50 text-slate-950 font-bold px-8 py-2.5 rounded-xl shadow-lg shadow-sky-500/20 transition flex items-center space-x-2"
+      >
+        <span *ngIf="isLoading" class="animate-spin mr-1">🔄</span>
+        <span>{{ isEditMode ? 'Update Setlist' : 'Create Setlist' }}</span>
+      </button>
+    </div>
+
+  </form>
+
+</div>

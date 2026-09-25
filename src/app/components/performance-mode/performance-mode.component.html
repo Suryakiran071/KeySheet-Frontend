@@ -1,0 +1,219 @@
+<!-- Fullscreen High-Contrast Stage Screen -->
+<div class="min-h-screen bg-black text-white px-4 sm:px-8 py-6 flex flex-col justify-between select-none">
+
+  <!-- Top Sticky Stage Bar -->
+  <header class="sticky top-0 z-40 bg-black/90 backdrop-blur-md border-b border-slate-800 pb-4 mb-6">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-4">
+      
+      <!-- Setlist Name & Song Counter -->
+      <div class="flex items-center space-x-3">
+        <a 
+          [routerLink]="['/setlists', setlist?.id]" 
+          class="text-slate-400 hover:text-white text-xs uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 transition"
+        >
+          ✕ Exit Stage Mode
+        </a>
+        <span class="text-slate-400 text-sm font-semibold hidden sm:inline-block">
+          {{ setlist?.name }}
+        </span>
+      </div>
+
+      <!-- Song Jump Selector -->
+      <div class="flex items-center space-x-2">
+        <span class="text-sky-400 font-mono font-bold text-sm">
+          Song {{ (currentIndex + 1) }} of {{ setlist?.songs?.length || 0 }}
+        </span>
+        <button
+          (click)="showSongDrawer = !showSongDrawer"
+          class="bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-3 py-1 rounded-lg text-xs font-bold transition"
+        >
+          ☰ Setlist
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Stage Content Area -->
+  <main class="max-w-5xl mx-auto w-full flex-grow pb-24" *ngIf="currentSong">
+
+    <!-- Current Song Header Banner -->
+    <div class="bg-slate-950 border-2 border-slate-800 rounded-3xl p-6 sm:p-8 mb-8 shadow-2xl">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+        <div>
+          <span class="text-xs uppercase tracking-widest text-slate-500 font-bold">NOW PLAYING</span>
+          <h1 class="text-4xl sm:text-5xl font-black text-white tracking-tight mt-1">{{ currentSong.songTitle }}</h1>
+          <p class="text-xl text-slate-400 font-semibold mt-1">{{ currentSong.songArtist }}</p>
+          
+          <!-- Sound / Gear Instructions -->
+          <div *ngIf="currentSong.notes" class="mt-4 p-3.5 bg-sky-950/40 border border-sky-500/30 rounded-xl text-sm font-mono text-sky-300">
+            🎹 <strong>SOUND SETUP:</strong> {{ currentSong.notes }}
+          </div>
+        </div>
+
+        <!-- Big Key & BPM HUD Display -->
+        <div class="flex sm:flex-col items-center sm:items-end gap-3 shrink-0">
+          <div class="bg-black border-2 border-sky-400 rounded-2xl px-6 py-3 text-center shadow-lg shadow-sky-500/20">
+            <span class="text-[10px] uppercase tracking-widest text-slate-400 block font-bold">KEY</span>
+            <span class="text-4xl font-black text-sky-400 font-mono">{{ currentSong.performanceKey || currentSong.originalKey }}</span>
+          </div>
+
+          <div *ngIf="currentSong.performanceBpm" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-center">
+            <span class="text-xs text-slate-400 font-mono font-bold">⏱️ {{ currentSong.performanceBpm }} BPM</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Emergency Key Adjusters -->
+      <div class="flex items-center justify-end space-x-2 mt-4 pt-4 border-t border-slate-900">
+        <span class="text-xs text-slate-500 mr-2">Quick Key Shift:</span>
+        <button
+          (click)="shiftStageSemitones(-1)"
+          class="bg-slate-900 hover:bg-slate-800 text-sky-400 font-bold px-3 py-1 rounded-lg text-xs border border-slate-800 transition"
+        >
+          -1
+        </button>
+        <button
+          (click)="shiftStageSemitones(1)"
+          class="bg-slate-900 hover:bg-slate-800 text-sky-400 font-bold px-3 py-1 rounded-lg text-xs border border-slate-800 transition"
+        >
+          +1
+        </button>
+      </div>
+    </div>
+
+    <!-- Live Lyrics & Chords Stage Sheet -->
+    <div class="bg-slate-950 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl">
+      <div
+        class="font-mono leading-[2.6] sm:leading-[2.8] whitespace-pre-wrap text-slate-100 font-medium"
+        [style.fontSize.px]="fontSize"
+        [innerHTML]="formatStageChords(currentSong.lyricsAndChords)"
+      ></div>
+    </div>
+
+  </main>
+
+  <!-- Empty Song State -->
+  <div *ngIf="!currentSong && !isLoading" class="text-center py-32">
+    <p class="text-slate-500 text-lg">No songs in this setlist to perform.</p>
+    <a [routerLink]="['/setlists', setlist?.id]" class="mt-4 inline-block text-sky-400 font-bold underline">
+      ← Go Back & Add Songs
+    </a>
+  </div>
+
+  <!-- Bottom Navigation HUD (Fixed on Stage) -->
+  <footer class="fixed bottom-0 inset-x-0 bg-black/95 backdrop-blur-md border-t border-slate-800 z-40">
+    
+    <!-- Floating Stage Toolbar -->
+    <div class="max-w-4xl mx-auto px-4 pt-3 pb-1 flex items-center justify-center gap-3 flex-wrap">
+
+      <!-- Auto-Scroll Play/Pause -->
+      <button
+        (click)="toggleAutoScroll()"
+        [ngClass]="isScrolling ? 'bg-amber-500 text-black' : 'bg-slate-900 text-slate-300'"
+        class="font-bold px-4 py-1.5 rounded-xl text-sm border border-slate-700 transition flex items-center gap-1.5"
+      >
+        <span>{{ isScrolling ? '⏸' : '▶' }}</span>
+        <span>{{ isScrolling ? 'Pause' : 'Scroll' }}</span>
+      </button>
+
+      <!-- Scroll Speed Slider -->
+      <div class="flex items-center gap-2">
+        <span class="text-[10px] text-slate-500 uppercase font-bold">Slow</span>
+        <input
+          type="range"
+          [(ngModel)]="scrollSpeed"
+          (input)="onScrollSpeedChange()"
+          min="1"
+          max="100"
+          class="w-20 sm:w-28 accent-sky-400 h-1.5 cursor-pointer"
+        />
+        <span class="text-[10px] text-slate-500 uppercase font-bold">Fast</span>
+      </div>
+
+      <!-- Divider -->
+      <div class="w-px h-6 bg-slate-800 hidden sm:block"></div>
+
+      <!-- Font Size -->
+      <div class="flex items-center gap-1">
+        <button
+          (click)="decreaseFontSize()"
+          class="text-xs font-bold text-slate-400 hover:text-white px-2 py-1 rounded-lg bg-slate-900 border border-slate-800 transition"
+        >A−</button>
+        <span class="text-[10px] text-slate-500 font-mono w-5 text-center">{{ fontSize }}</span>
+        <button
+          (click)="increaseFontSize()"
+          class="text-xs font-bold text-slate-400 hover:text-white px-2 py-1 rounded-lg bg-slate-900 border border-slate-800 transition"
+        >A+</button>
+      </div>
+
+      <!-- Fullscreen -->
+      <button
+        (click)="toggleFullscreen()"
+        class="text-xs font-bold text-slate-400 hover:text-white px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 transition"
+      >
+        {{ isFullscreen ? '⛶ Exit' : '⛶ Full' }}
+      </button>
+    </div>
+
+    <!-- Song Nav Buttons -->
+    <div class="max-w-4xl mx-auto flex items-center justify-between gap-4 p-4 pt-2">
+      
+      <!-- Previous Song Button -->
+      <button
+        (click)="previousSong()"
+        [disabled]="currentIndex === 0"
+        class="flex-1 bg-slate-900 hover:bg-slate-800 disabled:opacity-30 text-white font-black py-4 px-6 rounded-2xl border border-slate-700 text-lg sm:text-xl transition active:scale-95 flex items-center justify-center space-x-2"
+      >
+        <span>◀ PREV</span>
+      </button>
+
+      <!-- Next Song Button -->
+      <button
+        (click)="nextSong()"
+        [disabled]="!setlist?.songs || currentIndex >= (setlist?.songs?.length || 1) - 1"
+        class="flex-1 bg-sky-500 hover:bg-sky-400 disabled:opacity-30 text-black font-black py-4 px-6 rounded-2xl shadow-xl shadow-sky-500/25 text-lg sm:text-xl transition active:scale-95 flex items-center justify-center space-x-2"
+      >
+        <span>NEXT ▶</span>
+      </button>
+
+    </div>
+  </footer>
+
+  <!-- Setlist Quick-Jump Drawer Modal -->
+  <div *ngIf="showSongDrawer" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex justify-end">
+    <div class="bg-slate-950 border-l border-slate-800 w-full max-w-sm h-full p-6 flex flex-col justify-between shadow-2xl">
+      <div>
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+          <h3 class="text-xl font-bold text-white">Setlist Songs</h3>
+          <button (click)="showSongDrawer = false" class="text-slate-400 text-xl font-bold">✕</button>
+        </div>
+
+        <div class="space-y-2 overflow-y-auto max-h-[70vh]">
+          <div
+            *ngFor="let s of setlist?.songs; let idx = index"
+            (click)="jumpToSong(idx)"
+            [ngClass]="idx === currentIndex ? 'bg-sky-950 border-sky-500 text-white' : 'bg-slate-900 border-slate-800 text-slate-300'"
+            class="p-3 rounded-xl border cursor-pointer hover:border-sky-500 transition flex items-center justify-between"
+          >
+            <div class="truncate">
+              <span class="font-bold mr-2 text-sky-400 font-mono">{{ idx + 1 }}.</span>
+              <span class="font-bold">{{ s.songTitle }}</span>
+            </div>
+            <span class="text-xs font-mono font-bold text-sky-400 bg-black px-2 py-0.5 rounded border border-slate-800">
+              {{ s.performanceKey || s.originalKey }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <button
+        (click)="showSongDrawer = false"
+        class="w-full bg-slate-900 text-slate-300 py-3 rounded-xl font-bold text-sm mt-4 border border-slate-800"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+
+</div>
