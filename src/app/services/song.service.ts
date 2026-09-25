@@ -2,13 +2,14 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Song, SongRequest } from '../Models/song.model';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SongService {
 
-  private apiUrl = 'http://localhost:8081/api/songs'; // Replace with your backend API URL
+  private apiUrl = `${environment.apiUrl}/songs`;
   constructor(private http: HttpClient) { }
 
   getAllSongs(): Observable<Song[]> {

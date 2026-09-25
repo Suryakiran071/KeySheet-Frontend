@@ -2,12 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Setlist, SetlistRequest, SetlistSongRequest } from '../Models/setlist.model';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SetlistService {
-  private apiUrl = 'http://localhost:8081/api/setlists';
+  private apiUrl = `${environment.apiUrl}/setlists`;
 
   constructor(private http: HttpClient) {}
 
